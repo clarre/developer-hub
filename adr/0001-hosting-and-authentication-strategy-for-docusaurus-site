@@ -1,0 +1,93 @@
+# 🧾 ADR: Hosting & Authentication Strategy for Docusaurus Site
+
+**Status:** Accepted  
+**Date:** 2025-05-04  
+**Context:** Hosting and Authentication for a Static Documentation Site
+
+---
+
+## 🎯 Goal
+
+We need to host a **Docusaurus site** and **protect access via GitHub login**. The solution should:
+
+- Be **cost-effective** (ideally free tier)
+- Require **minimal backend logic**
+- Be easy to deploy from **GitHub**
+- Offer a **simple auth integration**
+- Be scalable with minimal effort
+
+---
+
+## 🧩 Options Considered
+
+### 1. Vercel + Firebase Auth (GitHub login)
+
+**Pros:**
+- Excellent developer experience and fast deployments
+- Easy static hosting from GitHub
+- Firebase Auth supports GitHub login
+
+**Cons:**
+- Protecting the **entire site** requires client-side logic and token management
+- No built-in route protection or access control
+- Two separate platforms (more moving parts)
+
+---
+
+### 2. Amplify + Cognito (GitHub login)
+
+**Pros:**
+- Unified platform for **hosting + auth**
+- Cognito Hosted UI makes GitHub login simple with no backend
+- Easy to protect the full site via OAuth flow
+- GitHub integration for CI/CD
+- Built on AWS S3 + CloudFront
+- Covered under AWS free tier (S3, CloudFront, Cognito)
+
+**Cons:**
+- Slightly more complex initial setup
+- Amplify console UX less refined than Vercel
+
+---
+
+### 3. S3 Static Hosting + Cognito
+
+**Pros:**
+- Fully serverless and cost-efficient
+
+**Cons:**
+- Requires manual setup of S3, CloudFront, redirects, and HTTPS
+- No native GitHub CI/CD
+- Higher maintenance and config overhead
+
+---
+
+## ✅ Decision: Use AWS Amplify with Cognito (GitHub login)
+
+We will use **Amplify Hosting** for Docusaurus and **Cognito Hosted UI** for GitHub login.
+
+**Reasons:**
+- Unified stack for hosting and authentication
+- GitHub login works with no backend code via Hosted UI
+- GitHub integration for CI/CD simplifies deployment
+- Auth flow happens **before site load**
+- Entire setup is free at low traffic levels
+
+---
+
+## 📦 Implementation Summary
+
+- Deploy Docusaurus with Amplify connected to GitHub
+- Use Cognito User Pool and enable GitHub as an Identity Provider
+- Configure Hosted UI with `code` or `token` response type
+- Modify Docusaurus layout component to handle OAuth redirect and store access token
+- Optionally map a custom domain via Amplify
+
+---
+
+## 📝 Consequences
+
+- We gain a scalable, secure, and cost-effective hosting + auth solution
+- Initial Cognito setup adds complexity but is a one-time task
+- No need to manage separate backend, saving dev time and risk
+
